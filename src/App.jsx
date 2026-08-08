@@ -131,141 +131,62 @@ function Navbar() {
   )
 }
 
-function FoxConsole() {
-  const [sample, setSample] = useState(0)
-  const [menu, setMenu] = useState(false)
-  const [input, setInput] = useState('E x = 3 + 4')
-  const [screen, setScreen] = useState([])
-  const screenRef = useRef(null)
-  const [sound, setSound] = useState(true)
-  const [running, setRunning] = useState(false)
-  const screenKeys = ['G', 'E', 'O', '?', '@', 'F', 'R', 'N', 'U', 'Q', 'S', 'L']
-  const keyBtn = (kk) => setInput((s) => s + kk)
+function CoffeeCard() {
+  const src = [
+    '# age check',
+    'E age = 17',
+    '? age >= 18',
+    '  G "you can vote"',
+    ':',
+    '  G "too young"',
+    ';',
+  ].join('\n')
+  const [n, setN] = useState(0)
+  const [out, setOut] = useState(null)
 
   useEffect(() => {
-    if (screenRef.current) screenRef.current.scrollTop = screenRef.current.scrollHeight
-  }, [screen])
+    if (n < src.length) {
+      const id = setTimeout(() => setN((c) => c + 1), 34)
+      return () => clearTimeout(id)
+    }
+    if (out === null) {
+      const v = new Vulpin()
+      v.run(src + '\n# ---')
+      setOut(v.output)
+    }
+    return undefined
+  }, [n, out, src])
 
-  const runText = (txt) => {
-    const lines = txt.replace(/\r\n/g, '\n').split('\n').map((l) => l.trimEnd())
-    lines.push('# ---')
-    const v = new Vulpin()
-    v.run(lines.join('\n'))
-    let out = [...v.output]
-    if (!out.length) out = ['(no output)']
-    setRunning(true)
-    setTimeout(() => setRunning(false), 900)
-    setScreen(out)
-    return out
-  }
-
-  const runSample = (i) => {
-    runText(SAMPLES[i])
-  }
-
-  const step = (d) => {
-    const i = (sample + d + SAMPLES.length) % SAMPLES.length
-    setSample(i)
-    runSample(i)
-  }
-
-  const dialAngle = -135 + (sample / (SAMPLES.length - 1)) * 270
-
-  const menuItems = [
-    { i: 'P', t: 'playground', href: '#play' },
-    { i: 'C', t: 'commands', href: '#commands' },
-    { i: 'W', t: 'why vulpin', href: '#why' },
-    { i: '☆', t: 'github', href: 'https://github.com/vulpin-lang/VulpinC' },
-  ]
+  const done = n >= src.length
 
   return (
-    <div className="aero-panel glass-strong fxcon">
-      <div className="caption">
-        <span className="cbtns">
-          <span className="cbtn cbtn--min">_</span>
-          <span className="cbtn cbtn--max">□</span>
-          <span className="cbtn cbtn--cls">×</span>
-        </span>
-        <h4>vulpin — interactive shell</h4>
-      </div>
+    <div className="coffee-card">
+      <div className="paper">
+        <span className="stain stain--a" />
+        <span className="stain stain--b" />
+        <span className="stain stain--c" />
+        <span className="stain stain--d" />
 
-      <div className="fx-toolbar">
-        <div className="fox">
-          <img src="./logo.png" alt="vulpin fox" />
-          <span className="gloss" />
-        </div>
-        <div className="fx-status">
-          <span className="fxstatus-row"><b>{sound ? 'vol' : 'mute'}</b> out </span>
-          <span className="fxstatus-row">mem <b>416B</b></span>
-          <span className="fxstatus-row">prc <b>{sample + 1}/6</b></span>
-        </div>
-        <div className="fx-power">
-          <span className={running ? 'pbtn pbtn--on' : 'pbtn'} title="running indicator">
-            <span className="led" />
-            {running ? 'run' : 'idle'}
-          </span>
-          <button className="aero-cu" onClick={() => setSound((s) => !s)}>sound {sound ? 'on' : 'off'}</button>
-        </div>
-      </div>
-
-      <div className="fx-body">
-        <div className="fx-screen" ref={screenRef}>
-          {screen.length === 0 && (
-            <pre className="line">
-              <span className="c-hi">vulpin v0.1</span>
-              <span className="c-dim"> type a program or press RUN</span>
-            </pre>
-          )}
-          {screen.map((ln, i) => (
-            <pre className="line" key={i}>
-              <span className="c-hi">v▸</span> {ln}
-            </pre>
-          ))}
-          <span className="cur" />
+        <div className="paper-head">
+          <span className="paper-tag">note to self</span>
+          <span className="paper-date">vulpin v0.9</span>
         </div>
 
-        <div className="fx-keys">
-          {screenKeys.map((k) => (
-            <button key={k} className="key" onClick={() => keyBtn(k)} title={`insert "${k}"`}>
-              {k}
-            </button>
-          ))}
-          <span className="key-spacer" />
-          <button className="key key--long" onClick={() => setInput('')}>CLR</button>
-        </div>
-
-        <div className="fx-knobrow">
-          <div className="krow-l">
-            <button className="knob" aria-label="select program" style={{ transform: `rotate(${dialAngle}deg)` }} onClick={() => step(1)}>
-              <span className="knob-dot" />
-            </button>
-            <div className="kob-label"><b>{SAMPLES[sample].split('\n')[0].replace('# ', '')}</b><span>program {sample + 1} / {SAMPLES.length}</span></div>
-          </div>
-          <button className="aero-btn aero-btn--blue" onClick={() => runText(SAMPLES[sample])}>RUN ▸</button>
-        </div>
-
-        <div className="groove">
-          <span>v▸</span>
-          <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && runText(input)} />
+        <pre className="paper-code">
+          {src.slice(0, n)}
           <span className="caret" />
-        </div>
-      </div>
+        </pre>
 
-      <div className="fx-taskbar">
-        <button className="start-btn" aria-label="start menu" onClick={() => setMenu((m) => !m)}>
-          <span className="orb" />
-        </button>
-        <span className="fx-bt">vulpin OS·{sample + 1} sample</span>
-        {menu && (
-          <div className="start-menu glass-strong">
-            <h5>vulpin</h5>
-            {menuItems.map((mi) => (
-              <a key={mi.t} href={mi.href} onClick={() => setMenu(false)}>
-                <span className="ic">{mi.i}</span> {mi.t}
-              </a>
-            ))}
+        {done && out && out.length && (
+          <div className="paper-out">
+            <div className="paper-out-line">v▸ <b>{out[0]}</b></div>
+            <span className="paper-done">ran in the browser — no boilerplate</span>
           </div>
         )}
+
+        <div className="stamp"><span>vulpin</span> v0.9</div>
+
+        <p className="paper-foot">a whole program fits on a coffee stain.</p>
       </div>
     </div>
   )
@@ -297,7 +218,7 @@ function Hero() {
       </div>
 
       <Reveal>
-        <FoxConsole />
+        <CoffeeCard />
       </Reveal>
     </header>
   )
